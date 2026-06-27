@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RevisIA — Flashcards inteligentes que não te deixam esquecer</title>
+<meta name="description" content="RevisIA é o app de flashcards com IA integrada que explica, adapta e revisa com você — para que o conteúdo realmente fique.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --brand: #20B0B5;
+    --brand-2: #3567BF;
+    --ink: #222222;
+    --ink-soft: #777777;
+    --paper: #FFFFFF;
+    --bg-2: #F5F7FA;
+
+    --brand-rgb: 32,176,181;
+    --brand2-rgb: 53,103,191;
+
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Source Sans 3', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --radius: 14px;
+    --radius-sm: 8px;
+    --container: 1140px;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  a{ color: inherit; text-decoration:none; }
+  img{ max-width:100%; display:block; }
+  button{ font-family: inherit; cursor:pointer; }
+
+  :focus-visible{
+    outline: 2.5px solid var(--brand-2);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .wrap{
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand-2);
+    font-weight: 500;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px; height:7px;
+    border-radius:50%;
+    background: var(--brand);
+    flex-shrink:0;
+  }
+
+  h1,h2,h3,h4{ font-family: var(--font-display); font-weight:700; letter-spacing:-0.01em; }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-weight:600;
+    font-size: 0.98rem;
+    border: none;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    white-space: nowrap;
+  }
+  .btn-primary{
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 8px 20px -8px rgba(var(--brand-rgb), .55);
+  }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(var(--brand-rgb), .6); }
+  .btn-ghost{
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid #E2E6EA;
+  }
+  .btn-ghost:hover{ border-color: var(--brand); color: var(--brand); }
+
+  /* ---------- NAV ---------- */
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(255,255,255,.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #EEF1F4;
+  }
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px 28px;
+    max-width: var(--container);
+    margin: 0 auto;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family: var(--font-display); font-weight:800; font-size:1.25rem;
+  }
+  .logo svg{ width:30px; height:30px; }
+  .nav-links{ display:flex; gap:32px; align-items:center; }
+  .nav-links a{
+    font-size: 0.94rem; font-weight:600; color: var(--ink-soft);
+    transition: color .15s ease;
+  }
+  .nav-links a:hover{ color: var(--brand-2); }
+  .nav-cta{ display:flex; gap:14px; align-items:center; }
+  .nav-toggle{ display:none; background:none; border:none; padding:8px; }
+  @media (max-width: 880px){
+    .nav-links{ display:none; }
+    .nav-cta .btn-ghost{ display:none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position: relative;
+    padding: 88px 0 110px;
+    background:
+      radial-gradient(900px 500px at 82% -10%, rgba(var(--brand2-rgb), .10), transparent 60%),
+      radial-gradient(800px 500px at -10% 30%, rgba(var(--brand-rgb), .10), transparent 60%),
+      var(--bg-2);
+    overflow: hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 56px;
+    align-items:center;
+  }
+  .hero-grid > div{ min-width: 0; }
+  @media (max-width: 940px){
+    .hero-grid{ grid-template-columns: 1fr; }
+  }
+
+  .hero h1{
+    font-size: clamp(2.3rem, 4.4vw, 3.4rem);
+    line-height: 1.08;
+    margin: 22px 0 22px;
+  }
+  .hero h1 .accent{ color: var(--brand); }
+  .hero p.lede{
+    font-size: 1.13rem;
+    color: var(--ink-soft);
+    max-width: 520px;
+    margin-bottom: 34px;
+  }
+  .hero-ctas{ display:flex; gap:16px; flex-wrap:wrap; margin-bottom:38px; }
+
+  .hero-proof{
+    display:flex; gap:28px; flex-wrap:wrap;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .hero-proof b{ color: var(--ink); font-family: var(--font-display); font-size:1.05rem; display:block; }
+
+  /* ---- Flip card signature ---- */
+  .card-stage{
+    position: relative;
+    display:flex; justify-content:center;
+    perspective: 1400px;
+    min-width: 0;
+  }
+  .card-shell{
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+  }
+  .flashcard{
+    width: 100%;
+    aspect-ratio: 320/380;
+    position: relative;
+    cursor: pointer;
+  }
+  .flashcard .face{
+    position:absolute; inset:0;
+    border-radius: 20px;
+    backface-visibility: hidden;
+    display:flex; flex-direction:column;
+    padding: 30px;
+    box-shadow: 0 30px 60px -20px rgba(20,30,60,.25);
+    transition: transform .7s cubic-bezier(.4,.2,.2,1);
+  }
+  .flashcard .front{
+    background: var(--paper);
+    border: 1px solid #EEF1F4;
+    transform: rotateY(0deg);
+    justify-content:space-between;
+  }
+  .flashcard .back{
+    background: linear-gradient(150deg, var(--brand) 0%, var(--brand-2) 100%);
+    color:#fff;
+    transform: rotateY(180deg);
+    justify-content:space-between;
+  }
+  .flashcard.flipped .front{ transform: rotateY(-180deg); }
+  .flashcard.flipped .back{ transform: rotateY(0deg); }
+
+  .face .tag{
+    font-family: var(--font-mono); font-size:0.72rem; letter-spacing:.08em; text-transform:uppercase;
+    opacity:.7;
+    display:flex; align-items:center; gap:8px;
+  }
+  .front .tag{ color: var(--brand-2); }
+  .face .q{
+    font-family: var(--font-display); font-weight:700; font-size:1.32rem; line-height:1.35;
+  }
+  .face .hint{
+    font-size: 0.84rem;
+    display:flex; align-items:center; gap:8px;
+  }
+  .front .hint{ color: var(--ink-soft); }
+  .back .hint{ color: rgba(255,255,255,.85); }
+  .flip-icon{
+    width:15px; height:15px; flex-shrink:0;
+  }
+
+  .ai-bubble{
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.86rem;
+    line-height:1.5;
+  }
+
+  .card-orbit-label{
+    position:absolute;
+    z-index: 5;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+    background: var(--paper);
+    border: 1px solid #EEF1F4;
+    padding: 7px 12px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px -10px rgba(20,30,60,.18);
+  }
+  .orbit-1{ top: -16px; left: -16px; transform: translate(-55%, -25%); animation: float1 6s ease-in-out infinite; }
+  .orbit-2{ bottom: -16px; right: -16px; transform: translate(55%, 25%); animation: float2 7s ease-in-out infinite; }
+  @media (max-width: 1100px){ .orbit-1, .orbit-2{ display:none; } }
+
+  @keyframes float1{ 0%,100%{ transform: translate(-55%, -25%);} 50%{ transform: translate(-55%, calc(-25% - 10px));} }
+  @keyframes float2{ 0%,100%{ transform: translate(55%, 25%);} 50%{ transform: translate(55%, calc(25% + 10px));} }
+
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{ padding: 100px 0; }
+  .section-head{ max-width: 640px; margin-bottom: 56px; }
+  .section-head h2{ font-size: clamp(1.7rem, 3vw, 2.3rem); margin-top:14px; }
+  .section-head p{ color: var(--ink-soft); margin-top: 14px; font-size: 1.05rem; }
+  .bg-soft{ background: var(--bg-2); }
+
+  /* ---------- DIFERENCIAIS ---------- */
+  .diff-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 880px){ .diff-grid{ grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px){ .diff-grid{ grid-template-columns: 1fr; } }
+
+  .diff-card{
+    background: var(--paper);
+    border: 1px solid #EEF1F4;
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .diff-card:hover{ transform: translateY(-4px); box-shadow: 0 20px 40px -24px rgba(20,30,60,.22); }
+  .diff-icon{
+    width: 46px; height:46px;
+    border-radius: 12px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+  }
+  .diff-icon svg{ width:23px; height:23px; }
+  .diff-card h3{ font-size: 1.08rem; margin-bottom:10px; }
+  .diff-card p{ color: var(--ink-soft); font-size: 0.94rem; }
+
+  .ic-teal{ background: rgba(var(--brand-rgb), .12); color: var(--brand); }
+  .ic-blue{ background: rgba(var(--brand2-rgb), .12); color: var(--brand-2); }
+  .ic-dark{ background: rgba(34,34,34,.08); color: var(--ink); }
+
+  /* ---------- VIDEO ---------- */
+  .video-frame{
+    position:relative;
+    border-radius: 18px;
+    overflow:hidden;
+    aspect-ratio: 16/9;
+    background: linear-gradient(150deg, #1c1c1c, #0c0c0c);
+    box-shadow: 0 30px 60px -24px rgba(20,30,60,.3);
+    border: 1px solid #11161c;
+  }
+  .video-frame iframe{ width:100%; height:100%; border:0; position:absolute; inset:0; }
+  .video-placeholder{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 16px;
+    color: rgba(255,255,255,.78);
+    text-align:center;
+    padding: 20px;
+  }
+  .play-btn{
+    width: 72px; height:72px; border-radius:50%;
+    background: var(--brand);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 0 0 rgba(var(--brand-rgb), .5);
+    animation: pulse 2.4s ease-out infinite;
+  }
+  .play-btn svg{ width:26px; height:26px; fill:#fff; margin-left:3px; }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(var(--brand-rgb), .45); }
+    70%{ box-shadow: 0 0 0 22px rgba(var(--brand-rgb), 0); }
+    100%{ box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0); }
+  }
+  .video-placeholder .ph-label{ font-family: var(--font-mono); font-size: 0.82rem; letter-spacing:.05em; }
+
+  /* ---------- SPRINT / ARTEFATOS ---------- */
+  .sprint-tabs{
+    display:flex; gap:10px; margin-bottom:36px; flex-wrap:wrap;
+  }
+  .sprint-tab{
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1.5px solid #E2E6EA;
+    background: var(--paper);
+    font-weight:600; font-size:0.92rem;
+    color: var(--ink-soft);
+    transition: all .15s ease;
+  }
+  .sprint-tab.active{
+    background: var(--ink);
+    color:#fff;
+    border-color: var(--ink);
+  }
+
+  .artifact-panel{
+    display:grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 880px){ .artifact-panel{ grid-template-columns: 1fr; } }
+
+  .artifact-figure{
+    border-radius: var(--radius);
+    overflow:hidden;
+    border: 1px solid #EEF1F4;
+    background: #fff;
+    box-shadow: 0 20px 50px -28px rgba(20,30,60,.25);
+  }
+  .artifact-figure img{ width:100%; display:block; }
+  .artifact-figure .ph{
+    aspect-ratio: 4/3;
+    background:
+      repeating-linear-gradient(45deg, #F5F7FA 0 12px, #EFF2F6 12px 24px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; color: var(--ink-soft);
+    padding: 24px; text-align:center;
+  }
+  .artifact-figure .ph svg{ width:34px; height:34px; opacity:.5; }
+  .artifact-figure .ph span{ font-family: var(--font-mono); font-size:0.78rem; }
+
+  .artifact-copy h3{ font-size:1.3rem; margin-bottom: 14px; }
+  .artifact-copy ul{ list-style:none; margin: 18px 0; }
+  .artifact-copy li{
+    display:flex; gap:12px; padding: 10px 0;
+    border-bottom: 1px solid #EEF1F4;
+    font-size: 0.96rem;
+  }
+  .artifact-copy li:last-child{ border-bottom:none; }
+  .artifact-copy li b{ color: var(--brand-2); font-family: var(--font-mono); font-size:0.82rem; flex-shrink:0; padding-top:2px; }
+  .artifact-copy p{ color: var(--ink-soft); margin-bottom: 10px; }
+
+  .pane{ display:none; }
+  .pane.active{ display:block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn{ from{ opacity:0; transform: translateY(6px);} to{ opacity:1; transform:none; } }
+
+  /* ---------- STORYBOARD STRIP ---------- */
+  .storyboard-strip{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 760px){ .storyboard-strip{ grid-template-columns: repeat(2, 1fr); } }
+
+  .story-frame{
+    background:#fff; border:1px solid #EEF1F4; border-radius: 12px;
+    overflow:hidden;
+  }
+  .story-frame .ph{ aspect-ratio: 1/1; }
+  .story-frame .cap{
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    border-top: 1px solid #EEF1F4;
+  }
+  .story-frame .cap b{ color: var(--ink); display:block; font-family: var(--font-mono); font-size:0.7rem; letter-spacing:.06em; margin-bottom:4px; }
+
+  /* ---------- PROTOTYPE ---------- */
+  .proto-wrap{
+    border-radius: 18px;
+    border: 1px solid #EEF1F4;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -28px rgba(20,30,60,.25);
+    background: #fff;
+  }
+  .proto-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 20px;
+    background: var(--bg-2);
+    border-bottom: 1px solid #EEF1F4;
+  }
+  .proto-bar .dots{ display:flex; gap:7px; }
+  .proto-bar .dots span{ width:11px; height:11px; border-radius:50%; background:#D7DCE2; }
+  .proto-bar .url{
+    font-family: var(--font-mono); font-size:0.78rem; color: var(--ink-soft);
+    background:#fff; border:1px solid #E2E6EA; padding:5px 14px; border-radius:999px;
+  }
+  .proto-embed{ aspect-ratio: 16/10; background: var(--bg-2); position:relative; }
+  .proto-embed iframe{ width:100%; height:100%; border:0; }
+  .proto-placeholder{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; color: var(--ink-soft); text-align:center; padding:30px;
+  }
+  .proto-placeholder svg{ width:40px; height:40px; opacity:.45; }
+
+  /* ---------- TEAM ---------- */
+  .team-grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 800px){ .team-grid{ grid-template-columns: repeat(2, 1fr); } }
+
+  .team-card{ text-align:center; }
+  .avatar{
+    width: 104px; height:104px; border-radius:50%;
+    margin: 0 auto 16px;
+    background: linear-gradient(150deg, rgba(var(--brand-rgb),.16), rgba(var(--brand2-rgb),.16));
+    display:flex; align-items:center; justify-content:center;
+    border: 2px dashed rgba(var(--brand2-rgb), .35);
+  }
+  .avatar svg{ width:40px; height:40px; color: var(--brand-2); opacity:.6; }
+  .team-card h4{ font-family: var(--font-display); font-size:1.02rem; margin-bottom:3px; }
+  .team-card span{ font-size: 0.86rem; color: var(--ink-soft); font-family: var(--font-mono); }
+
+  /* ---------- FOOTER CTA ---------- */
+  .cta-band{
+    background: linear-gradient(150deg, var(--brand-2) 0%, var(--brand) 100%);
+    border-radius: 24px;
+    padding: 64px 48px;
+    text-align:center;
+    color:#fff;
+    margin: 0 28px;
+    max-width: calc(var(--container) - 56px);
+    margin-inline: auto;
+  }
+  .cta-band h2{ font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom:16px; color:#fff; }
+  .cta-band p{ color: rgba(255,255,255,.85); max-width:480px; margin: 0 auto 30px; }
+  .cta-band .btn-primary{ background:#fff; color: var(--brand-2); box-shadow:none; }
+  .cta-band .btn-primary:hover{ background:#fff; transform: translateY(-2px); }
+
+  footer{
+    padding: 48px 0 32px;
+    text-align:center;
+  }
+  footer .logo{ justify-content:center; margin-bottom: 14px; }
+  footer p{ color: var(--ink-soft); font-size:0.88rem; }
+  footer .uni{ font-family: var(--font-mono); font-size:0.78rem; color:#A7AEB6; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="#top" class="logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 8C4 6.5 5.5 5 8 5C11 5 14 6.5 16 8.5V27C14 25 11 23.5 8 23.5C5.5 23.5 4 25 4 26.5V8Z" fill="#20B0B5"/>
+        <path d="M28 8C28 6.5 26.5 5 24 5C21 5 18 6.5 16 8.5V27C18 25 21 23.5 24 23.5C26.5 23.5 28 25 28 26.5V8Z" fill="#3567BF"/>
+      </svg>
+      RevisIA
+    </a>
+    <div class="nav-links">
+      <a href="#diferenciais">Diferenciais</a>
+      <a href="#video">Vídeo</a>
+      <a href="#sprint">Design Sprint</a>
+      <a href="#prototipo">Protótipo</a>
+      <a href="#equipe">Equipe</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#prototipo" class="btn btn-ghost">Ver protótipo</a>
+      <a href="#video" class="btn btn-primary">Assistir demo</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" style="padding-top:64px;">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Flashcards + IA · Projeto UTFPR / IHC</p>
+          <h1>Você revisa. <span class="accent">A IA explica.</span><br>O conteúdo fica.</h1>
+          <p class="lede">RevisIA é o app de flashcards que une repetição espaçada com uma inteligência artificial que tira suas dúvidas na hora — direto no cartão, sem trocar de aba e sem perder o fio do estudo.</p>
+          <div class="hero-ctas">
+            <a href="#video" class="btn btn-primary">
+              Ver vídeo de demonstração
+            </a>
+            <a href="#prototipo" class="btn btn-ghost">Explorar protótipo</a>
+          </div>
+          <div class="hero-proof">
+            <div><b>47%</b>esquecem o conteúdo estudado a longo prazo</div>
+            <div><b>80%</b>já recorrem a IA para tirar dúvidas nos estudos</div>
+            <div><b>66%</b>trocariam de app por facilidade de uso</div>
+          </div>
+        </div>
+
+        <div class="card-stage">
+          <div class="card-shell">
+            <div class="card-orbit-label orbit-1">📚 Bio · Ecologia</div>
+            <div class="card-orbit-label orbit-2">✅ 20 acertos hoje</div>
+
+            <div class="flashcard" id="flashcard" role="button" tabindex="0" aria-label="Cartão de exemplo, clique para ver a resposta">
+              <div class="face front">
+                <span class="tag">Pergunta · Ecologia</span>
+                <p class="q">O que é uma cadeia alimentar e qual o papel dos decompositores nela?</p>
+                <span class="hint">
+                  <svg class="flip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Toque para virar
+                </span>
+              </div>
+              <div class="face back">
+                <span class="tag" style="color:rgba(255,255,255,.85);">Resposta</span>
+                <div>
+                  <p class="q" style="margin-bottom:14px;">É a sequência de transferência de energia entre seres vivos, dos produtores até os decompositores.</p>
+                  <div class="ai-bubble">
+                    🤖 <b>NEMBot:</b> pensa nos decompositores como o "time de limpeza" — eles devolvem nutrientes ao solo para o ciclo recomeçar.
+                  </div>
+                </div>
+                <span class="hint">
+                  <svg class="flip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Toque para voltar
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DESCRIÇÃO + DIFERENCIAIS ============ -->
+  <section id="diferenciais">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">O produto</p>
+        <h2>Flashcards que pensam junto com você</h2>
+        <p>RevisIA permite criar, organizar e revisar baralhos de qualquer disciplina enquanto acompanha seu desempenho ao longo do tempo. O diferencial é a IA integrada: ela explica conceitos, dá exemplos e adapta a dificuldade conforme você erra ou acerta — tudo sem sair do cartão de estudo.</p>
+      </div>
+
+      <div class="diff-grid">
+        <div class="diff-card">
+          <div class="diff-icon ic-teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7Z"/><path d="M9 21h6"/></svg>
+          </div>
+          <h3>IA dentro do cartão</h3>
+          <p>Tire dúvidas, peça exemplos e receba explicações no exato momento em que a dificuldade aparece — sem trocar de app.</p>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-icon ic-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          </div>
+          <h3>Acompanhamento real</h3>
+          <p>Estatísticas de acertos, erros e tempo de uso por baralho, para você saber exatamente onde focar a próxima revisão.</p>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-icon ic-dark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </div>
+          <h3>Baralhos prontos e seus próprios</h3>
+          <p>Comece com baralhos já organizados por matéria ou crie os seus do zero — com a IA ajudando a redigir pergunta e resposta.</p>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-icon ic-teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>Dúvida sem fricção</h3>
+          <p>Em vez de pausar o estudo para pesquisar em outro lugar, a pergunta "tirar dúvida com IA" resolve no fluxo.</p>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-icon ic-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+          <h3>Repetição espaçada</h3>
+          <p>O app prioriza o que você mais erra, reforçando exatamente os pontos que a pesquisa apontou como maior dificuldade.</p>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-icon ic-dark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.5-9.5 9-9.5 9Z"/></svg>
+          </div>
+          <h3>Interface sem fricção</h3>
+          <p>Foi o item mais pedido na nossa pesquisa: navegação limpa, rápida e sem curva de aprendizado para começar a usar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIDEO ============ -->
+  <section id="video" class="bg-soft">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Vídeo de conceito</p>
+        <h2>RevisIA em 2 minutos</h2>
+        <p>Uma demonstração curta de como o app funciona na prática — da criação do baralho até a IA explicando a resposta errada.</p>
+      </div>
+
+      <div class="video-frame">
+        <!--
+          QUANDO O VÍDEO ESTIVER PRONTO:
+          Suba no YouTube (não listado) e troque este placeholder por:
+          <iframe src="https://www.youtube.com/embed/SEU_ID_AQUI" title="Vídeo RevisIA" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        -->
+        <div class="video-placeholder">
+          <div class="play-btn">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p class="ph-label">Vídeo em produção — embed do YouTube entra aqui</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DESIGN SPRINT ============ -->
+  <section id="sprint">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Processo</p>
+        <h2>Artefatos do Design Sprint</h2>
+        <p>Do mapeamento do problema até o storyboard da solução: o caminho que levou ao RevisIA que existe hoje.</p>
+      </div>
+
+      <div class="sprint-tabs" role="tablist">
+        <button class="sprint-tab active" data-pane="mapa" role="tab" aria-selected="true">Mapa de usuário</button>
+        <button class="sprint-tab" data-pane="esbocos" role="tab" aria-selected="false">Esboços votados</button>
+        <button class="sprint-tab" data-pane="storyboard" role="tab" aria-selected="false">Storyboard</button>
+      </div>
+
+      <div class="pane active" id="pane-mapa">
+        <div class="artifact-panel">
+          <div class="artifact-figure">
+            <div class="ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+              <span>mapa-usuario-objetivo.png</span>
+            </div>
+          </div>
+          <div class="artifact-copy">
+            <h3>Mapa Usuário → Objetivo</h3>
+            <p>Construído na etapa de pré-sprint, conectando o objetivo de longo prazo da equipe aos cenários pessimistas que justificam o produto.</p>
+            <ul>
+              <li><b>OBJETIVO</b> Reduzir o esquecimento de conteúdo a longo prazo entre estudantes que revisam sozinhos.</li>
+              <li><b>PESSIMISTA</b> O estudante cria flashcards, mas para de usar o app em poucos dias por falta de explicação quando erra.</li>
+              <li><b>HMW</b> Como podemos fazer a dúvida ser resolvida no instante em que ela aparece, sem o estudante sair do app?</li>
+              <li><b>FOCO</b> Resposta da IA integrada ao cartão — circulado como o foco do sprint.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-esbocos">
+        <div class="artifact-panel">
+          <div class="artifact-figure">
+            <div class="ph">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586M11 11a2 2 0 1 0 2.828 2.828A2 2 0 0 0 11 11z"/></svg>
+              <span>esbocos-solucao-votados.png</span>
+            </div>
+          </div>
+          <div class="artifact-copy">
+            <h3>Esboços das soluções votadas</h3>
+            <p>Cada integrante esboçou uma abordagem para o HMW escolhido. Os esboços abaixo receberam mais votos na dinâmica de heat map.</p>
+            <ul>
+              <li><b>01</b> Card com botão "tirar dúvida" que abre um chat contextual sem sair da tela de revisão.</li>
+              <li><b>02</b> Resposta errada dispara automaticamente uma explicação curta da IA antes do próximo cartão.</li>
+              <li><b>03</b> Estatísticas de erro recorrente sugerindo revisão guiada por IA daquele tópico.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-storyboard">
+        <div class="artifact-copy" style="margin-bottom:28px;">
+          <h3>Storyboard</h3>
+          <p>A jornada do estudante do momento da dúvida até a revisão reforçada pela IA.</p>
+        </div>
+        <div class="storyboard-strip">
+          <div class="story-frame">
+            <div class="ph" style="aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(45deg, #F5F7FA 0 12px, #EFF2F6 12px 24px);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div class="cap"><b>Quadro 1</b>Estudante revisa um baralho e erra uma pergunta de Biologia.</div>
+          </div>
+          <div class="story-frame">
+            <div class="ph" style="aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(45deg, #F5F7FA 0 12px, #EFF2F6 12px 24px);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div class="cap"><b>Quadro 2</b>Toca em "tirar dúvida com IA" direto no cartão da resposta.</div>
+          </div>
+          <div class="story-frame">
+            <div class="ph" style="aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(45deg, #F5F7FA 0 12px, #EFF2F6 12px 24px);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div class="cap"><b>Quadro 3</b>IA explica o conceito com um exemplo simples e contextual.</div>
+          </div>
+          <div class="story-frame">
+            <div class="ph" style="aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:repeating-linear-gradient(45deg, #F5F7FA 0 12px, #EFF2F6 12px 24px);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            </div>
+            <div class="cap"><b>Quadro 4</b>Cartão volta a aparecer em revisões futuras com prioridade maior.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROTÓTIPO ============ -->
+  <section id="prototipo" class="bg-soft">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Protótipo</p>
+        <h2>Explore o RevisIA no Figma</h2>
+        <p>Navegue pelo fluxo completo — do cadastro à revisão de cartões com IA — direto no protótipo interativo.</p>
+      </div>
+
+      <div class="proto-wrap">
+        <div class="proto-bar">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <div class="url">figma.com/proto/revisia</div>
+          <div style="width:54px;"></div>
+        </div>
+        <div class="proto-embed">
+          <!--
+            QUANDO TIVER O LINK DE COMPARTILHAMENTO PÚBLICO DO FIGMA:
+            <iframe src="https://www.figma.com/embed?embed_host=share&url=SEU_LINK_DE_PROTOTIPO_AQUI" allowfullscreen></iframe>
+          -->
+          <div class="proto-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5Z"/><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2Z"/><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5Z"/><path d="M5 19.5A3.5 3.5 0 1 1 8.5 16H12v.5a3.5 3.5 0 0 1-7 3Z"/><path d="M15.5 9a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z"/></svg>
+            <p>Embed do protótipo Figma entra aqui</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:28px;">
+        <a href="#" class="btn btn-ghost">Abrir repositório no GitHub →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EQUIPE ============ -->
+  <section id="equipe">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Quem fez</p>
+        <h2>Equipe</h2>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <h4>Arthur Menegon</h4>
+          <span>Equipe RevisIA</span>
+        </div>
+        <div class="team-card">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <h4>Arthur de Lima Souza</h4>
+          <span>Equipe RevisIA</span>
+        </div>
+        <div class="team-card">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <h4>Gabriel Rolim de Almeida Kihara</h4>
+          <span>Equipe RevisIA</span>
+        </div>
+        <div class="team-card">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <h4>Juan Henrique do Carmo</h4>
+          <span>Equipe RevisIA</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA FINAL ============ -->
+  <section style="padding-top:0;">
+    <div class="cta-band">
+      <h2>Pronto para ver o RevisIA por dentro?</h2>
+      <p>Confira a demonstração completa e navegue pelo protótipo interativo.</p>
+      <a href="#prototipo" class="btn btn-primary">Explorar protótipo no Figma</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="#top" class="logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 8C4 6.5 5.5 5 8 5C11 5 14 6.5 16 8.5V27C14 25 11 23.5 8 23.5C5.5 23.5 4 25 4 26.5V8Z" fill="#20B0B5"/>
+        <path d="M28 8C28 6.5 26.5 5 24 5C21 5 18 6.5 16 8.5V27C18 25 21 23.5 24 23.5C26.5 23.5 28 25 28 26.5V8Z" fill="#3567BF"/>
+      </svg>
+      RevisIA
+    </a>
+    <p>Projeto desenvolvido para a disciplina de Interação Humano-Computador.</p>
+    <p class="uni">UTFPR — Universidade Tecnológica Federal do Paraná · Campus Campo Mourão · 2026</p>
+  </div>
+</footer>
+
+<script>
+  // Flip card
+  const card = document.getElementById('flashcard');
+  card.addEventListener('click', () => card.classList.toggle('flipped'));
+  card.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); card.classList.toggle('flipped'); }
+  });
+
+  // Sprint tabs
+  const tabs = document.querySelectorAll('.sprint-tab');
+  const panes = document.querySelectorAll('.pane');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      panes.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected','true');
+      document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+    });
+  });
+
+  // Mobile nav (simple: links already collapse via CSS; toggle reserved for future use)
+</script>
+
+</body>
+</html>
