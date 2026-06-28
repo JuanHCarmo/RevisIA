@@ -24,3 +24,4 @@ Landing page do projeto **RevisIA** — aplicativo de flashcards com IA integrad
 ├── CHECKLIST.md            → o que falta preencher antes da entrega
 └── README.md
 ```
+
